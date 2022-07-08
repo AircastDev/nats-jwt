@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+-   Don't serialize the permissions map if the allow and deny list are empty ([#2](https://github.com/AircastDev/nats-jwt/issues/2))
+
 ## v0.2.0 (2022-07-08)
 
 ### Added

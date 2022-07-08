@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.0 (2022-07-08)
+
+### Added
+
+-   Add expires field to the jwt claims
+
+### Changed
+
+-   `issued_at` field on the jwt claims is now an i64 to match expires, and the go implementation
+
 ## v0.1.0 (2021-07-25)
 
 ### Added

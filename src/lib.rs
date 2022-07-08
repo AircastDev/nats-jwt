@@ -68,7 +68,7 @@ const JWT_HEADER: &str = r#"{"typ":"JWT","alg":"ed25519-nkey"}"#;
 pub struct Claims {
     /// Time when the token was issued in seconds since the unix epoch
     #[serde(rename = "iat")]
-    pub issued_at: u64,
+    pub issued_at: i64,
 
     /// Public key of the issuer signing nkey
     #[serde(rename = "iss")]
@@ -395,7 +395,7 @@ impl<T: IntoNatsClaims> Token<T> {
         let issued_at = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("system time is after the unix epoch")
-            .as_secs();
+            .as_secs() as i64;
         let subject = self.subject.clone();
         let mut claims = Claims {
             issued_at,

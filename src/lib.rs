@@ -86,6 +86,10 @@ pub struct Claims {
 
     /// NATS claims
     pub nats: NatsClaims,
+
+    /// Time when the token expires (in seconds since the unix epoch)
+    #[serde(rename = "exp", skip_serializing_if = "Option::is_none")]
+    pub expires: Option<i64>,
 }
 
 /// NATS claims describing settings for the user or account
@@ -310,6 +314,7 @@ pub struct Token<T: IntoNatsClaims> {
     subject: String,
     name: Option<String>,
     nats: CommonNatsClaims,
+    expires: Option<i64>,
 }
 
 impl<T: IntoNatsClaims> Token<T> {
@@ -324,6 +329,7 @@ impl<T: IntoNatsClaims> Token<T> {
                 max_data: -1,
                 permissions: NatsPermissionsMap::default(),
             },
+            expires: None,
         }
     }
 
@@ -375,6 +381,12 @@ impl<T: IntoNatsClaims> Token<T> {
         self
     }
 
+    /// Set expiration
+    pub fn expires(mut self, expires: i64) -> Self {
+        self.expires = Some(expires);
+        self
+    }
+
     /// Sign the token with the given signing key, returning a JWT string.
     ///
     /// If this is a User token, this should be the Account signing key.
@@ -392,6 +404,7 @@ impl<T: IntoNatsClaims> Token<T> {
             name: self.name.unwrap_or_else(|| subject.clone()),
             sub: subject,
             nats: self.kind.into_nats_claims(self.nats),
+            expires: self.expires,
         };
         let claims_str = serde_json::to_string(&claims).expect("claims serialisation cannot fail");
         let mut hasher = Sha256::new();

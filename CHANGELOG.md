@@ -9,6 +9,7 @@
 ### Changed
 
 -   `issued_at` field on the jwt claims is now an i64 to match expires, and the go implementation
+-   `nkeys` and `sha2` updated to `0.2` and `0.10` respectively
 
 ## v0.1.0 (2021-07-25)
 

@@ -151,15 +151,22 @@ pub struct NatsPermissions {
     pub deny: Vec<String>,
 }
 
+impl NatsPermissions {
+    /// Returns `true` if the allow and deny list are both empty
+    pub fn is_empty(&self) -> bool {
+        self.allow.is_empty() && self.deny.is_empty()
+    }
+}
+
 /// Publish and subcribe permissons
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct NatsPermissionsMap {
-    /// Permissions for which sujects can be published to
-    #[serde(rename = "pub")]
+    /// Permissions for which subjects can be published to
+    #[serde(rename = "pub", skip_serializing_if = "NatsPermissions::is_empty")]
     pub publish: NatsPermissions,
 
-    /// Permissions for which sujects can be subcribed to
-    #[serde(rename = "sub")]
+    /// Permissions for which subjects can be subscribed to
+    #[serde(rename = "sub", skip_serializing_if = "NatsPermissions::is_empty")]
     pub subscribe: NatsPermissions,
 }
 
@@ -200,7 +207,7 @@ pub struct CommonNatsClaims {
     pub max_data: i64,
     /// Maximum size of the entire message payload a user can send in bytes
     pub max_payload: i64,
-    /// Permissons for which subjects can be published/subcribed to
+    /// Permissons for which subjects can be published/subscribed to
     pub permissions: NatsPermissionsMap,
 }
 

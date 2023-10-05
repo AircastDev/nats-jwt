@@ -55,7 +55,7 @@
 use data_encoding::{BASE32HEX_NOPAD, BASE64URL_NOPAD};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::time::SystemTime;
+use std::{convert::TryInto, time::SystemTime};
 
 /// Re-export of `KeyPair` from the nkeys crate.
 ///
@@ -411,12 +411,15 @@ impl<T: IntoNatsClaims> Token<T> {
     ///
     /// # Panics
     ///
-    /// It panics if system time is before UNIX epoch.
+    /// - If system time is before UNIX epoch.
+    /// - If the seconds from UNIX epoch cannot be represented in a i64.
     pub fn sign(self, signing_key: &KeyPair) -> String {
         let issued_at = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("system time is after the unix epoch")
-            .as_secs() as i64;
+            .as_secs()
+            .try_into()
+            .expect("seconds from UNIX epoch cannot be represented in a i64");
         let subject = self.subject.clone();
         let mut claims = Claims {
             issued_at,

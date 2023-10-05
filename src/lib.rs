@@ -40,9 +40,9 @@
 //! Licensed under either of
 //!
 //! -   Apache License, Version 2.0
-//!     ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+//!     ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 //! -   MIT license
-//!     ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+//!     ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 //!
 //! at your option.
 //!
@@ -57,7 +57,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::time::SystemTime;
 
-/// Re-export of KeyPair from the nkeys crate.
+/// Re-export of `KeyPair` from the nkeys crate.
 ///
 pub use nkeys::KeyPair;
 
@@ -212,7 +212,7 @@ pub struct CommonNatsClaims {
     pub permissions: NatsPermissionsMap,
 }
 
-/// Consume the input and return a NatsClaims struct
+/// Consume the input and return a `NatsClaims` struct
 ///
 /// This is used by [`Token::sign`] to get the relevant claims for the token type
 pub trait IntoNatsClaims {
@@ -222,7 +222,7 @@ pub trait IntoNatsClaims {
 
 /// Consume the input and return a public KKEY
 ///
-/// This is used by [`Token::add_signing_key`] to allow taking either a String, &str, or a &KeyPair
+/// This is used by [`Token::add_signing_key`] to allow taking either a String, &str, or a &`KeyPair`
 pub trait IntoPublicKey {
     /// Performs the conversion
     fn into_public_key(self) -> String;
@@ -408,6 +408,10 @@ impl<T: IntoNatsClaims> Token<T> {
     ///
     /// If this is a User token, this should be the Account signing key.
     /// If this is an Account token, this should be the Operator key
+    ///
+    /// # Panics
+    ///
+    /// It panics if system time is before UNIX epoch.
     pub fn sign(self, signing_key: &KeyPair) -> String {
         let issued_at = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
@@ -485,7 +489,7 @@ impl Token<Account> {
         )
     }
 
-    /// Add a signing key to the token. Takes anything that implements IntoPublicKey. This is
+    /// Add a signing key to the token. Takes anything that implements `IntoPublicKey`. This is
     /// implemented for `String`, `&str`, and [`&KeyPair`](nkeys::KeyPair)
     #[must_use]
     pub fn add_signing_key(mut self, signing_key: impl IntoPublicKey) -> Self {

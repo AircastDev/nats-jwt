@@ -153,6 +153,7 @@ pub struct NatsPermissions {
 
 impl NatsPermissions {
     /// Returns `true` if the allow and deny list are both empty
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.allow.is_empty() && self.deny.is_empty()
     }
@@ -341,54 +342,63 @@ impl<T: IntoNatsClaims> Token<T> {
     }
 
     /// Set the friendly name for the token, can be anything, defaults to the token subject
+    #[must_use]
     pub fn name(mut self, name: impl Into<String>) -> Self {
         self.name = Some(name.into());
         self
     }
 
     /// Set the maximum number of subscriptions this token will allow
+    #[must_use]
     pub fn max_subscriptions(mut self, max_subscriptions: i64) -> Self {
         self.nats.max_subscriptions = max_subscriptions;
         self
     }
 
     /// Set the maximum payload size in bytes this token will allow
+    #[must_use]
     pub fn max_payload(mut self, max_payload: i64) -> Self {
         self.nats.max_payload = max_payload;
         self
     }
 
     /// Set the maximum data size in bytes this token will allow
+    #[must_use]
     pub fn max_data(mut self, max_data: i64) -> Self {
         self.nats.max_data = max_data;
         self
     }
 
     /// Allow a subject/pattern to be published to
+    #[must_use]
     pub fn allow_publish(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.publish.allow.push(subject.into());
         self
     }
 
     /// Deny a subject/pattern from being published to
+    #[must_use]
     pub fn deny_publish(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.publish.deny.push(subject.into());
         self
     }
 
     /// Allow a subject/pattern to be subcribe to
+    #[must_use]
     pub fn allow_subscribe(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.subscribe.allow.push(subject.into());
         self
     }
 
     /// Deny a subject/pattern from being subscribed to
+    #[must_use]
     pub fn deny_subscribe(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.subscribe.deny.push(subject.into());
         self
     }
 
     /// Set expiration
+    #[must_use]
     pub fn expires(mut self, expires: i64) -> Self {
         self.expires = Some(expires);
         self
@@ -450,6 +460,7 @@ impl Token<User> {
 
     /// If true, the user isn't challenged on connection. Typically used for websocket
     /// connections as the browser won't have/want to have the user's private key.
+    #[must_use]
     pub fn bearer_token(mut self, bearer_token: bool) -> Self {
         self.kind.bearer_token = bearer_token;
         self
@@ -476,36 +487,42 @@ impl Token<Account> {
 
     /// Add a signing key to the token. Takes anything that implements IntoPublicKey. This is
     /// implemented for `String`, `&str`, and [`&KeyPair`](nkeys::KeyPair)
+    #[must_use]
     pub fn add_signing_key(mut self, signing_key: impl IntoPublicKey) -> Self {
         self.kind.signing_keys.push(signing_key.into_public_key());
         self
     }
 
     /// Set the maximum number of imports this account can have.
+    #[must_use]
     pub fn max_imports(mut self, max_imports: i64) -> Self {
         self.kind.max_imports = max_imports;
         self
     }
 
     /// Set the maximum number of exports this account can have.
+    #[must_use]
     pub fn max_exports(mut self, max_exports: i64) -> Self {
         self.kind.max_exports = max_exports;
         self
     }
 
     /// Set the maximum number of connections this account can have.
+    #[must_use]
     pub fn max_connections(mut self, max_connections: i64) -> Self {
         self.kind.max_connections = max_connections;
         self
     }
 
     /// Set the maximum number of leaf nodes this account can have.
+    #[must_use]
     pub fn max_leaf_nodes(mut self, max_leaf_nodes: i64) -> Self {
         self.kind.max_leaf_nodes = max_leaf_nodes;
         self
     }
 
     /// Allow exports to contain wildcards
+    #[must_use]
     pub fn allow_wildcards(mut self, allow_wildcards: bool) -> Self {
         self.kind.allow_wildcards = allow_wildcards;
         self

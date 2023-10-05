@@ -440,11 +440,11 @@ impl<T: IntoNatsClaims> Token<T> {
 
         let b64_header = BASE64URL_NOPAD.encode(JWT_HEADER.as_bytes());
         let b64_body = BASE64URL_NOPAD.encode(claims_str.as_bytes());
-        let jwt_half = format!("{}.{}", b64_header, b64_body);
+        let jwt_half = format!("{b64_header}.{b64_body}");
         let sig = signing_key.sign(jwt_half.as_bytes()).unwrap();
         let b64_sig = BASE64URL_NOPAD.encode(&sig);
 
-        format!("{}.{}", jwt_half, b64_sig)
+        format!("{jwt_half}.{b64_sig}")
     }
 }
 

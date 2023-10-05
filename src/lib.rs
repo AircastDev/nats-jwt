@@ -40,9 +40,9 @@
 //! Licensed under either of
 //!
 //! -   Apache License, Version 2.0
-//!     ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+//!     ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 //! -   MIT license
-//!     ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+//!     ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 //!
 //! at your option.
 //!
@@ -55,9 +55,9 @@
 use data_encoding::{BASE32HEX_NOPAD, BASE64URL_NOPAD};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::time::SystemTime;
+use std::{convert::TryInto, time::SystemTime};
 
-/// Re-export of KeyPair from the nkeys crate.
+/// Re-export of `KeyPair` from the nkeys crate.
 ///
 pub use nkeys::KeyPair;
 
@@ -153,6 +153,7 @@ pub struct NatsPermissions {
 
 impl NatsPermissions {
     /// Returns `true` if the allow and deny list are both empty
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.allow.is_empty() && self.deny.is_empty()
     }
@@ -211,7 +212,7 @@ pub struct CommonNatsClaims {
     pub permissions: NatsPermissionsMap,
 }
 
-/// Consume the input and return a NatsClaims struct
+/// Consume the input and return a `NatsClaims` struct
 ///
 /// This is used by [`Token::sign`] to get the relevant claims for the token type
 pub trait IntoNatsClaims {
@@ -221,7 +222,7 @@ pub trait IntoNatsClaims {
 
 /// Consume the input and return a public KKEY
 ///
-/// This is used by [`Token::add_signing_key`] to allow taking either a String, &str, or a &KeyPair
+/// This is used by [`Token::add_signing_key`] to allow taking either a String, &str, or a &`KeyPair`
 pub trait IntoPublicKey {
     /// Performs the conversion
     fn into_public_key(self) -> String;
@@ -341,54 +342,63 @@ impl<T: IntoNatsClaims> Token<T> {
     }
 
     /// Set the friendly name for the token, can be anything, defaults to the token subject
+    #[must_use]
     pub fn name(mut self, name: impl Into<String>) -> Self {
         self.name = Some(name.into());
         self
     }
 
     /// Set the maximum number of subscriptions this token will allow
+    #[must_use]
     pub fn max_subscriptions(mut self, max_subscriptions: i64) -> Self {
         self.nats.max_subscriptions = max_subscriptions;
         self
     }
 
     /// Set the maximum payload size in bytes this token will allow
+    #[must_use]
     pub fn max_payload(mut self, max_payload: i64) -> Self {
         self.nats.max_payload = max_payload;
         self
     }
 
     /// Set the maximum data size in bytes this token will allow
+    #[must_use]
     pub fn max_data(mut self, max_data: i64) -> Self {
         self.nats.max_data = max_data;
         self
     }
 
     /// Allow a subject/pattern to be published to
+    #[must_use]
     pub fn allow_publish(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.publish.allow.push(subject.into());
         self
     }
 
     /// Deny a subject/pattern from being published to
+    #[must_use]
     pub fn deny_publish(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.publish.deny.push(subject.into());
         self
     }
 
     /// Allow a subject/pattern to be subcribe to
+    #[must_use]
     pub fn allow_subscribe(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.subscribe.allow.push(subject.into());
         self
     }
 
     /// Deny a subject/pattern from being subscribed to
+    #[must_use]
     pub fn deny_subscribe(mut self, subject: impl Into<String>) -> Self {
         self.nats.permissions.subscribe.deny.push(subject.into());
         self
     }
 
     /// Set expiration
+    #[must_use]
     pub fn expires(mut self, expires: i64) -> Self {
         self.expires = Some(expires);
         self
@@ -398,11 +408,18 @@ impl<T: IntoNatsClaims> Token<T> {
     ///
     /// If this is a User token, this should be the Account signing key.
     /// If this is an Account token, this should be the Operator key
+    ///
+    /// # Panics
+    ///
+    /// - If system time is before UNIX epoch.
+    /// - If the seconds from UNIX epoch cannot be represented in a i64.
     pub fn sign(self, signing_key: &KeyPair) -> String {
         let issued_at = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("system time is after the unix epoch")
-            .as_secs() as i64;
+            .as_secs()
+            .try_into()
+            .expect("seconds from UNIX epoch cannot be represented in a i64");
         let subject = self.subject.clone();
         let mut claims = Claims {
             issued_at,
@@ -423,11 +440,11 @@ impl<T: IntoNatsClaims> Token<T> {
 
         let b64_header = BASE64URL_NOPAD.encode(JWT_HEADER.as_bytes());
         let b64_body = BASE64URL_NOPAD.encode(claims_str.as_bytes());
-        let jwt_half = format!("{}.{}", b64_header, b64_body);
+        let jwt_half = format!("{b64_header}.{b64_body}");
         let sig = signing_key.sign(jwt_half.as_bytes()).unwrap();
         let b64_sig = BASE64URL_NOPAD.encode(&sig);
 
-        format!("{}.{}", jwt_half, b64_sig)
+        format!("{jwt_half}.{b64_sig}")
     }
 }
 
@@ -450,6 +467,7 @@ impl Token<User> {
 
     /// If true, the user isn't challenged on connection. Typically used for websocket
     /// connections as the browser won't have/want to have the user's private key.
+    #[must_use]
     pub fn bearer_token(mut self, bearer_token: bool) -> Self {
         self.kind.bearer_token = bearer_token;
         self
@@ -474,38 +492,44 @@ impl Token<Account> {
         )
     }
 
-    /// Add a signing key to the token. Takes anything that implements IntoPublicKey. This is
+    /// Add a signing key to the token. Takes anything that implements `IntoPublicKey`. This is
     /// implemented for `String`, `&str`, and [`&KeyPair`](nkeys::KeyPair)
+    #[must_use]
     pub fn add_signing_key(mut self, signing_key: impl IntoPublicKey) -> Self {
         self.kind.signing_keys.push(signing_key.into_public_key());
         self
     }
 
     /// Set the maximum number of imports this account can have.
+    #[must_use]
     pub fn max_imports(mut self, max_imports: i64) -> Self {
         self.kind.max_imports = max_imports;
         self
     }
 
     /// Set the maximum number of exports this account can have.
+    #[must_use]
     pub fn max_exports(mut self, max_exports: i64) -> Self {
         self.kind.max_exports = max_exports;
         self
     }
 
     /// Set the maximum number of connections this account can have.
+    #[must_use]
     pub fn max_connections(mut self, max_connections: i64) -> Self {
         self.kind.max_connections = max_connections;
         self
     }
 
     /// Set the maximum number of leaf nodes this account can have.
+    #[must_use]
     pub fn max_leaf_nodes(mut self, max_leaf_nodes: i64) -> Self {
         self.kind.max_leaf_nodes = max_leaf_nodes;
         self
     }
 
     /// Allow exports to contain wildcards
+    #[must_use]
     pub fn allow_wildcards(mut self, allow_wildcards: bool) -> Self {
         self.kind.allow_wildcards = allow_wildcards;
         self

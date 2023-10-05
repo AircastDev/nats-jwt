@@ -9,6 +9,7 @@ readme = "README.md"
 keywords = ["jwt", "nats", "nkey", "nkeys"]
 categories = ["api-bindings", "authentication"]
 repository = "https://github.com/AircastDev/nats-jwt"
+rust-version = "1.58"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

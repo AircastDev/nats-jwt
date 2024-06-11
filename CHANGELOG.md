@@ -5,7 +5,7 @@
 ### Changed
 
 - `nkeys` dependency updated to `0.4` ([#6](https://github.com/AircastDev/nats-jwt/pull/6)) - thanks @SuperCoolAlan
-- Various lint fixes and msrv set to 1.58 ([#5](https://github.com/AircastDev/nats-jwt/pull/5)) - thanks @dodomorandi
+- Various lint fixes and msrv set to 1.65 ([#5](https://github.com/AircastDev/nats-jwt/pull/5)) - thanks @dodomorandi
 - Don't serialize the permissions map if the allow and deny list are empty ([#2](https://github.com/AircastDev/nats-jwt/issues/2))
 
 ## v0.2.0 (2022-07-08)

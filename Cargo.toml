@@ -1,6 +1,6 @@
 [package]
 name = "nats-jwt"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2018"
 description = "JWT library for creating NATS JWTs"
 authors = ["James Birtles <jamesb@airca.st>"]
@@ -17,3 +17,4 @@ serde_json = "1"
 sha2 = "0.10"
 data-encoding = "2.3"
 nkeys = "0.4"
+
